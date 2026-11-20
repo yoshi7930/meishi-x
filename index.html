@@ -343,14 +343,6 @@
         <input id="input-add-image" type="file" accept="image/*" class="hidden" />
       </label>
 
-      <!-- サンプルロゴ・スタンプ挿入 -->
-      <button id="tool-open-stamps" class="w-16 sm:w-20 py-2 px-1 rounded-xl hover:bg-[var(--secondary)] active:scale-95 transition flex flex-col items-center gap-1 border border-transparent hover:border-[var(--border)]">
-        <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-        </div>
-        <span class="text-[11px] font-medium leading-tight">ロゴ・素材</span>
-      </button>
-
       <!-- 図形・ライン追加 -->
       <button id="tool-open-shapes" class="w-16 sm:w-20 py-2 px-1 rounded-xl hover:bg-[var(--secondary)] active:scale-95 transition flex flex-col items-center gap-1 border border-transparent hover:border-[var(--border)]">
         <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center">
@@ -933,21 +925,63 @@
             </div>
           </div>
 
-          <!-- SHAPE SPECIFIC CONTROLS -->
+          <!-- SHAPE & LINE SPECIFIC CONTROLS (区切り線の太さ・線種・図形スタイル自由調整) -->
           <div id="props-shape-section" class="hidden p-3 rounded-xl bg-[var(--background)] border border-[var(--border)] space-y-3">
-            <div class="text-xs font-bold">図形・ライン配色</div>
+            <div class="text-xs font-bold" id="shape-section-title">図形・区切り線スタイル</div>
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="text-[10px] text-[var(--muted-foreground)] block mb-1">塗りつぶし色</label>
+                <label id="label-shape-fill" class="text-[10px] text-[var(--muted-foreground)] block mb-1">塗りつぶし / 線の色</label>
                 <input id="prop-shape-fill" type="color" value="#2563eb" class="w-full h-8 rounded cursor-pointer" />
               </div>
-              <div>
-                <label class="text-[10px] text-[var(--muted-foreground)] block mb-1">枠線の色</label>
+              <div id="wrap-shape-stroke">
+                <label class="text-[10px] text-[var(--muted-foreground)] block mb-1">外枠線の色</label>
                 <input id="prop-shape-stroke" type="color" value="#1e40af" class="w-full h-8 rounded cursor-pointer" />
               </div>
             </div>
+
+            <!-- Line Thickness & Style Controls (Shown when a divider line is selected, or stroke width for shapes) -->
+            <div id="props-line-thickness-box" class="space-y-2 pt-2 border-t border-[var(--border)]">
+              <div class="flex items-center justify-between">
+                <label id="label-line-weight" class="text-[11px] font-bold">線の太さ (px / mm)</label>
+                <span id="prop-line-weight-readout" class="text-[11px] font-mono text-[var(--primary)] font-bold">2.0 px (0.33 mm)</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button id="btn-line-weight-dec" class="w-8 h-8 rounded-lg bg-[var(--card)] border border-[var(--border)] font-bold text-sm hover:bg-[var(--secondary)] active:scale-95">−</button>
+                <input id="prop-line-weight-slider" type="range" min="0.5" max="48" step="0.5" value="2" class="flex-1 accent-[var(--primary)] h-2 cursor-pointer" />
+                <button id="btn-line-weight-inc" class="w-8 h-8 rounded-lg bg-[var(--card)] border border-[var(--border)] font-bold text-sm hover:bg-[var(--secondary)] active:scale-95">＋</button>
+                <input id="prop-line-weight-num" type="number" min="0.5" max="120" step="0.5" value="2" class="w-14 px-1.5 py-1 rounded-lg bg-[var(--card)] border border-[var(--border)] text-xs font-mono text-center" />
+              </div>
+
+              <!-- Quick Line Thickness Presets -->
+              <div>
+                <span class="text-[10px] text-[var(--muted-foreground)] block mb-1">ワンタップ太さプリセット</span>
+                <div class="grid grid-cols-5 gap-1">
+                  <button data-line-w="0.5" class="line-w-preset py-1 rounded bg-[var(--card)] border border-[var(--border)] text-[10px] font-mono hover:bg-[var(--secondary)]">極細<br/>0.5</button>
+                  <button data-line-w="1" class="line-w-preset py-1 rounded bg-[var(--card)] border border-[var(--border)] text-[10px] font-mono hover:bg-[var(--secondary)]">細線<br/>1px</button>
+                  <button data-line-w="2" class="line-w-preset py-1 rounded bg-[var(--card)] border border-[var(--border)] text-[10px] font-mono hover:bg-[var(--secondary)]">標準<br/>2px</button>
+                  <button data-line-w="4" class="line-w-preset py-1 rounded bg-[var(--card)] border border-[var(--border)] text-[10px] font-mono hover:bg-[var(--secondary)]">中太<br/>4px</button>
+                  <button data-line-w="8" class="line-w-preset py-1 rounded bg-[var(--card)] border border-[var(--border)] text-[10px] font-mono hover:bg-[var(--secondary)]">太帯<br/>8px</button>
+                </div>
+              </div>
+
+              <!-- Line Style (Solid, Dashed, Dotted, Double) -->
+              <div>
+                <label class="text-[10px] text-[var(--muted-foreground)] block mb-1">線の種類（実線・破線・点線・二重線）</label>
+                <div class="grid grid-cols-4 gap-1">
+                  <button data-line-style="solid" class="line-style-btn py-1.5 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-[11px] font-semibold">実線</button>
+                  <button data-line-style="dashed" class="line-style-btn py-1.5 rounded-lg bg-[var(--card)] border border-[var(--border)] text-[11px] font-semibold">破線</button>
+                  <button data-line-style="dotted" class="line-style-btn py-1.5 rounded-lg bg-[var(--card)] border border-[var(--border)] text-[11px] font-semibold">点線</button>
+                  <button data-line-style="double" class="line-style-btn py-1.5 rounded-lg bg-[var(--card)] border border-[var(--border)] text-[11px] font-semibold">二重線</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Corner Radius -->
             <div>
-              <label class="text-[10px] text-[var(--muted-foreground)] block">角丸 / 線幅</label>
+              <div class="flex justify-between text-[10px] text-[var(--muted-foreground)]">
+                <span>角丸 (丸み)</span>
+                <span id="prop-shape-radius-label" class="font-mono">0px</span>
+              </div>
               <input id="prop-shape-radius" type="range" min="0" max="40" value="4" class="w-full accent-[var(--primary)]" />
             </div>
           </div>
@@ -1451,16 +1485,27 @@
         }
         node.appendChild(img);
       } else if (el.type === 'shape') {
+        const lineStyle = el.lineStyle || 'solid';
         if (el.shapeType === 'line') {
-          node.style.backgroundColor = el.fill || '#cbd5e1';
-          node.style.height = Math.max(2, el.h) + 'px';
+          const lineThickness = Math.max(0.5, Number(el.h) || 2);
+          node.style.height = lineThickness + 'px';
+          node.style.borderRadius = (el.radius || 0) + 'px';
+          if (lineStyle === 'solid') {
+            node.style.backgroundColor = el.fill || '#cbd5e1';
+            node.style.borderTop = 'none';
+          } else {
+            node.style.backgroundColor = 'transparent';
+            node.style.borderTop = `${lineThickness}px ${lineStyle} ${el.fill || '#cbd5e1'}`;
+          }
         } else if (el.shapeType === 'circle') {
+          const sw = el.strokeWidth ?? 2;
           node.style.backgroundColor = el.fill || 'transparent';
-          node.style.border = el.stroke && el.stroke !== 'transparent' ? `2px solid ${el.stroke}` : 'none';
+          node.style.border = el.stroke && el.stroke !== 'transparent' && sw > 0 ? `${sw}px ${lineStyle} ${el.stroke}` : 'none';
           node.style.borderRadius = '50%';
         } else {
+          const sw = el.strokeWidth ?? 2;
           node.style.backgroundColor = el.fill || 'transparent';
-          node.style.border = el.stroke && el.stroke !== 'transparent' ? `2px solid ${el.stroke}` : 'none';
+          node.style.border = el.stroke && el.stroke !== 'transparent' && sw > 0 ? `${sw}px ${lineStyle} ${el.stroke}` : 'none';
           node.style.borderRadius = (el.radius || 0) + 'px';
         }
       }
@@ -1641,8 +1686,9 @@
         let newX = dragContext.origX;
         let newY = dragContext.origY;
 
+        const minH = (el.type === 'shape' && el.shapeType === 'line') ? 0.5 : 12;
         if (h.includes('e')) newW = Math.max(16, dragContext.origW + dx);
-        if (h.includes('s')) newH = Math.max(12, dragContext.origH + dy);
+        if (h.includes('s')) newH = Math.max(minH, dragContext.origH + dy);
         if (h.includes('w')) {
           const possibleW = dragContext.origW - dx;
           if (possibleW >= 16) {
@@ -1652,15 +1698,16 @@
         }
         if (h.includes('n')) {
           const possibleH = dragContext.origH - dy;
-          if (possibleH >= 12) {
+          if (possibleH >= minH) {
             newH = possibleH;
             newY = dragContext.origY + dy;
           }
         }
 
-        // Preserve aspect ratio on corner handles for images or when lockRatio is checked
+        // Preserve aspect ratio on corner handles for images or when lockRatio is checked (except for divider lines)
         const isCorner = h.length === 2;
-        if (isCorner && (state.lockRatio || el.type === 'image')) {
+        const isLine = el.type === 'shape' && el.shapeType === 'line';
+        if (isCorner && !isLine && (state.lockRatio || el.type === 'image')) {
           newH = Math.round(newW / dragContext.aspect);
           if (h.includes('n')) {
             newY = dragContext.origY + (dragContext.origH - newH);
@@ -1668,7 +1715,7 @@
         }
 
         el.w = Math.round(newW);
-        el.h = Math.round(newH);
+        el.h = isLine ? Math.round(newH * 2) / 2 : Math.round(newH);
         el.x = Math.round(newX);
         el.y = Math.round(newY);
 
@@ -1789,9 +1836,29 @@
           ? 'py-1.5 rounded-lg text-xs font-semibold bg-[var(--primary)] text-[var(--primary-foreground)]'
           : 'py-1.5 rounded-lg text-xs font-semibold bg-[var(--card)] border border-[var(--border)]';
       } else if (el.type === 'shape') {
+        const isLine = el.shapeType === 'line';
+        document.getElementById('shape-section-title').textContent = isLine ? '区切り線（ライン）の太さ・線種・色' : '図形・フレームの配色・太さ';
+        document.getElementById('label-shape-fill').textContent = isLine ? '区切り線の色' : '塗りつぶし色';
+        document.getElementById('wrap-shape-stroke').classList.toggle('hidden', isLine);
+        document.getElementById('label-line-weight').textContent = isLine ? '区切り線の太さ (px / mm)' : '外枠線の太さ (px)';
+
         document.getElementById('prop-shape-fill').value = el.fill && el.fill !== 'transparent' ? el.fill : '#2563eb';
         document.getElementById('prop-shape-stroke').value = el.stroke && el.stroke !== 'transparent' ? el.stroke : '#1e40af';
         document.getElementById('prop-shape-radius').value = el.radius || 0;
+        document.getElementById('prop-shape-radius-label').textContent = `${el.radius || 0}px`;
+
+        const weightPx = isLine ? Math.max(0.5, Number(el.h) || 2) : (el.strokeWidth ?? 2);
+        const weightMm = (weightPx / PX_PER_MM).toFixed(2);
+        document.getElementById('prop-line-weight-readout').textContent = `${weightPx.toFixed(1)} px (${weightMm} mm)`;
+        document.getElementById('prop-line-weight-slider').value = Math.min(48, weightPx);
+        document.getElementById('prop-line-weight-num').value = weightPx;
+
+        const curStyle = el.lineStyle || 'solid';
+        document.querySelectorAll('.line-style-btn').forEach((btn) => {
+          btn.className = btn.dataset.lineStyle === curStyle
+            ? 'line-style-btn py-1.5 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-[11px] font-semibold'
+            : 'line-style-btn py-1.5 rounded-lg bg-[var(--card)] border border-[var(--border)] text-[11px] font-semibold';
+        });
       }
     }
 
@@ -1803,7 +1870,8 @@
       const centerX = el.x + el.w / 2;
       const centerY = el.y + el.h / 2;
       el.w = Math.max(16, Math.min(600, Math.round(newWidthPx)));
-      if (state.lockRatio || el.type === 'image') {
+      const isLine = el.type === 'shape' && el.shapeType === 'line';
+      if (!isLine && (state.lockRatio || el.type === 'image')) {
         el.h = Math.max(12, Math.round(el.w / aspect));
       }
       el.x = Math.round(centerX - el.w / 2);
@@ -1888,8 +1956,10 @@
     document.getElementById('prop-h-mm').addEventListener('change', (e) => {
       const el = getSelectedElement();
       if (!el) return;
-      const newH = Math.max(12, Math.round(Number(e.target.value) * PX_PER_MM));
-      if (state.lockRatio) {
+      const isLine = el.type === 'shape' && el.shapeType === 'line';
+      const minPx = isLine ? 0.5 : 12;
+      const newH = Math.max(minPx, Math.round(Number(e.target.value) * PX_PER_MM * 2) / 2);
+      if (!isLine && state.lockRatio) {
         const aspect = el.w / Math.max(1, el.h);
         el.w = Math.round(newH * aspect);
       }
@@ -2117,18 +2187,88 @@
       if (el && el.type === 'image') { el.grayscale = e.target.checked; renderAll(); saveHistorySnapshot(); }
     });
 
-    // Shape Controls
+    // Shape & Divider Line Controls (太さ・線種・色・角丸の自由調整)
+    function updateSelectedLineOrShapeWeight(newWeightPx, commitHistory = false) {
+      const el = getSelectedElement();
+      if (!el || el.type !== 'shape') return;
+      const clamped = Math.max(0.5, Math.min(120, Math.round(Number(newWeightPx) * 2) / 2));
+      if (el.shapeType === 'line') {
+        el.h = clamped;
+      } else {
+        el.strokeWidth = clamped;
+      }
+      renderStageElements();
+      renderSelectionBox();
+      syncInspectorValuesOnly();
+      if (commitHistory) saveHistorySnapshot();
+    }
+
     document.getElementById('prop-shape-fill').addEventListener('input', (e) => {
       const el = getSelectedElement();
       if (el && el.type === 'shape') { el.fill = e.target.value; renderStageElements(); }
     });
+    document.getElementById('prop-shape-fill').addEventListener('change', () => saveHistorySnapshot());
+
     document.getElementById('prop-shape-stroke').addEventListener('input', (e) => {
       const el = getSelectedElement();
       if (el && el.type === 'shape') { el.stroke = e.target.value; renderStageElements(); }
     });
+    document.getElementById('prop-shape-stroke').addEventListener('change', () => saveHistorySnapshot());
+
     document.getElementById('prop-shape-radius').addEventListener('input', (e) => {
       const el = getSelectedElement();
-      if (el && el.type === 'shape') { el.radius = Number(e.target.value); renderStageElements(); }
+      if (el && el.type === 'shape') {
+        el.radius = Number(e.target.value);
+        renderStageElements();
+        syncInspectorValuesOnly();
+      }
+    });
+    document.getElementById('prop-shape-radius').addEventListener('change', () => saveHistorySnapshot());
+
+    document.getElementById('prop-line-weight-slider').addEventListener('input', (e) => {
+      updateSelectedLineOrShapeWeight(e.target.value, false);
+    });
+    document.getElementById('prop-line-weight-slider').addEventListener('change', (e) => {
+      updateSelectedLineOrShapeWeight(e.target.value, true);
+    });
+
+    document.getElementById('prop-line-weight-num').addEventListener('change', (e) => {
+      updateSelectedLineOrShapeWeight(e.target.value, true);
+    });
+
+    document.getElementById('btn-line-weight-dec').addEventListener('click', () => {
+      const el = getSelectedElement();
+      if (!el || el.type !== 'shape') return;
+      const cur = el.shapeType === 'line' ? (Number(el.h) || 2) : (el.strokeWidth ?? 2);
+      const step = cur <= 2 ? 0.5 : 1;
+      updateSelectedLineOrShapeWeight(cur - step, true);
+    });
+
+    document.getElementById('btn-line-weight-inc').addEventListener('click', () => {
+      const el = getSelectedElement();
+      if (!el || el.type !== 'shape') return;
+      const cur = el.shapeType === 'line' ? (Number(el.h) || 2) : (el.strokeWidth ?? 2);
+      const step = cur < 2 ? 0.5 : 1;
+      updateSelectedLineOrShapeWeight(cur + step, true);
+    });
+
+    document.querySelectorAll('.line-w-preset').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        updateSelectedLineOrShapeWeight(Number(btn.dataset.lineW), true);
+      });
+    });
+
+    document.querySelectorAll('.line-style-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const el = getSelectedElement();
+        if (!el || el.type !== 'shape') return;
+        el.lineStyle = btn.dataset.lineStyle;
+        if (el.lineStyle === 'double' && el.shapeType === 'line' && el.h < 3) {
+          el.h = 4; // 二重線が見えやすいよう最低4pxに自動補正
+        }
+        renderAll();
+        saveHistorySnapshot();
+      });
     });
 
     // Alignment, Duplicate, Delete, Layer Order
@@ -2206,7 +2346,7 @@
     });
 
     /********************************************************************
-     * 7. INSERT TOOLS (TEXT, IMAGE UPLOAD, STAMPS, SHAPES, QR, BG)
+     * 7. INSERT TOOLS (TEXT, IMAGE UPLOAD, SHAPES, QR, BG)
      ********************************************************************/
     function switchToDesignMode() {
       setMode('design');
@@ -2311,7 +2451,7 @@
       e.target.value = '';
     });
 
-    // Sub-Drawer Management (Stamps, Shapes, QR, Background)
+    // Sub-Drawer Management (Shapes, QR, Background)
     const subDrawer = document.getElementById('sub-drawer');
     const subDrawerTitle = document.getElementById('sub-drawer-title');
     const subDrawerContent = document.getElementById('sub-drawer-content');
@@ -2320,54 +2460,18 @@
       subDrawer.classList.add('hidden');
     });
 
-    // Open Stamps / Sample Logos Drawer
-    document.getElementById('tool-open-stamps').addEventListener('click', () => {
-      subDrawerTitle.textContent = 'ロゴ・写真スタンプ素材（サイズ変更自由）';
-      subDrawerContent.innerHTML = '';
-      const grid = document.createElement('div');
-      grid.className = 'grid grid-cols-2 gap-2.5';
-      BUILTIN_STAMPS.forEach((st) => {
-        const card = document.createElement('button');
-        card.className = 'p-2.5 rounded-xl bg-slate-50 hover:bg-blue-50/60 text-slate-900 border border-slate-200 hover:border-blue-600 flex flex-col items-center gap-1.5 transition active:scale-95';
-        card.innerHTML = `
-          <img src="${st.src}" class="w-14 h-14 object-contain rounded" />
-          <span class="text-[11px] font-medium text-slate-800 text-center leading-tight">${st.name}</span>
-        `;
-        card.addEventListener('click', () => {
-          switchToDesignMode();
-          const newEl = {
-            id: 'stamp-' + Date.now(),
-            type: 'image',
-            x: 80, y: 70, w: st.w, h: st.h,
-            rotation: 0, opacity: 1,
-            src: st.src,
-            fit: 'contain',
-            radius: 0,
-            borderWidth: 0,
-            borderColor: '#cbd5e1',
-            grayscale: false
-          };
-          getCurrentSideData().elements.push(newEl);
-          state.selectedId = newEl.id;
-          subDrawer.classList.add('hidden');
-          renderAll();
-          saveHistorySnapshot();
-        });
-        grid.appendChild(card);
-      });
-      subDrawerContent.appendChild(grid);
-      subDrawer.classList.remove('hidden');
-    });
-
-    // Open Shapes Drawer
+    // Open Shapes & Divider Lines Drawer
     document.getElementById('tool-open-shapes').addEventListener('click', () => {
-      subDrawerTitle.textContent = '図形・アクセントラインを追加';
+      subDrawerTitle.textContent = '区切り線・図形を追加';
       subDrawerContent.innerHTML = '';
       const shapes = [
-        { label: 'アクセント帯（長方形）', shapeType: 'rect', w: 180, h: 90, fill: '#1e3a8a', stroke: 'transparent', radius: 6 },
-        { label: '外枠フレーム（枠線）', shapeType: 'rect', w: 498, h: 282, fill: 'transparent', stroke: '#1e3a8a', radius: 8 },
-        { label: '区切りライン（横線）', shapeType: 'line', w: 420, h: 3, fill: '#3b82f6', stroke: 'transparent', radius: 0 },
-        { label: 'サークル・円形バッジ', shapeType: 'circle', w: 96, h: 96, fill: '#eff6ff', stroke: '#3b82f6', radius: 50 }
+        { label: '区切りライン（細線 1px）', shapeType: 'line', w: 450, h: 1, fill: '#64748b', stroke: 'transparent', radius: 0, lineStyle: 'solid' },
+        { label: '区切りライン（標準 2px）', shapeType: 'line', w: 450, h: 2, fill: '#3b82f6', stroke: 'transparent', radius: 0, lineStyle: 'solid' },
+        { label: '区切りライン（太線 5px）', shapeType: 'line', w: 450, h: 5, fill: '#1e3a8a', stroke: 'transparent', radius: 2, lineStyle: 'solid' },
+        { label: '区切りライン（破線・点線）', shapeType: 'line', w: 450, h: 2, fill: '#64748b', stroke: 'transparent', radius: 0, lineStyle: 'dashed' },
+        { label: 'アクセント帯（長方形）', shapeType: 'rect', w: 180, h: 90, fill: '#1e3a8a', stroke: 'transparent', radius: 6, strokeWidth: 0, lineStyle: 'solid' },
+        { label: '外枠フレーム（枠線）', shapeType: 'rect', w: 498, h: 282, fill: 'transparent', stroke: '#1e3a8a', radius: 8, strokeWidth: 2, lineStyle: 'solid' },
+        { label: 'サークル・円形バッジ', shapeType: 'circle', w: 96, h: 96, fill: '#eff6ff', stroke: '#3b82f6', radius: 50, strokeWidth: 2, lineStyle: 'solid' }
       ];
       shapes.forEach((sh) => {
         const btn = document.createElement('button');
@@ -2379,9 +2483,11 @@
             id: 'shp-' + Date.now(),
             type: 'shape',
             shapeType: sh.shapeType,
-            x: 40, y: 40, w: sh.w, h: sh.h,
+            x: 45, y: 155, w: sh.w, h: sh.h,
             rotation: 0, opacity: 1,
-            fill: sh.fill, stroke: sh.stroke, radius: sh.radius
+            fill: sh.fill, stroke: sh.stroke, radius: sh.radius,
+            strokeWidth: sh.strokeWidth ?? 2,
+            lineStyle: sh.lineStyle || 'solid'
           };
           getCurrentSideData().elements.push(newEl);
           state.selectedId = newEl.id;
@@ -2865,20 +2971,51 @@
         ctx.translate(-el.w / 2, -el.h / 2);
 
         if (el.type === 'shape') {
-          ctx.beginPath();
-          if (el.shapeType === 'circle') {
-            ctx.ellipse(el.w / 2, el.h / 2, el.w / 2, el.h / 2, 0, 0, Math.PI * 2);
+          const lineStyle = el.lineStyle || 'solid';
+          if (el.shapeType === 'line') {
+            const thickness = Math.max(0.5, Number(el.h) || 2);
+            const color = el.fill && el.fill !== 'transparent' ? el.fill : '#cbd5e1';
+            if (lineStyle === 'solid') {
+              ctx.beginPath();
+              ctx.roundRect(0, 0, el.w, thickness, el.radius || 0);
+              ctx.fillStyle = color;
+              ctx.fill();
+            } else if (lineStyle === 'double') {
+              const singleW = Math.max(1, thickness / 3.2);
+              ctx.fillStyle = color;
+              ctx.fillRect(0, 0, el.w, singleW);
+              ctx.fillRect(0, thickness - singleW, el.w, singleW);
+            } else {
+              ctx.beginPath();
+              if (lineStyle === 'dashed') ctx.setLineDash([thickness * 3, thickness * 2]);
+              if (lineStyle === 'dotted') ctx.setLineDash([thickness, thickness * 1.5]);
+              ctx.moveTo(0, thickness / 2);
+              ctx.lineTo(el.w, thickness / 2);
+              ctx.strokeStyle = color;
+              ctx.lineWidth = thickness;
+              ctx.stroke();
+              ctx.setLineDash([]);
+            }
           } else {
-            ctx.roundRect(0, 0, el.w, el.h, el.radius || 0);
-          }
-          if (el.fill && el.fill !== 'transparent') {
-            ctx.fillStyle = el.fill;
-            ctx.fill();
-          }
-          if (el.stroke && el.stroke !== 'transparent') {
-            ctx.strokeStyle = el.stroke;
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            ctx.beginPath();
+            if (el.shapeType === 'circle') {
+              ctx.ellipse(el.w / 2, el.h / 2, el.w / 2, el.h / 2, 0, 0, Math.PI * 2);
+            } else {
+              ctx.roundRect(0, 0, el.w, el.h, el.radius || 0);
+            }
+            if (el.fill && el.fill !== 'transparent') {
+              ctx.fillStyle = el.fill;
+              ctx.fill();
+            }
+            const sw = el.strokeWidth ?? 2;
+            if (el.stroke && el.stroke !== 'transparent' && sw > 0) {
+              if (lineStyle === 'dashed') ctx.setLineDash([sw * 3, sw * 2]);
+              if (lineStyle === 'dotted') ctx.setLineDash([sw, sw * 1.5]);
+              ctx.strokeStyle = el.stroke;
+              ctx.lineWidth = sw;
+              ctx.stroke();
+              ctx.setLineDash([]);
+            }
           }
         } else if (el.type === 'image') {
           await new Promise((resolve) => {
