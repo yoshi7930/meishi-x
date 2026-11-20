@@ -1309,12 +1309,12 @@
         front: {
           orientation: 'landscape',
           bg: { color: '#ffffff' },
-          elements: JSON.parse(JSON.stringify(TEMPLATES[0].elements))
+          elements: []
         },
         back: {
           orientation: 'landscape',
-          bg: { color: '#f8fafc' },
-          elements: JSON.parse(JSON.stringify(TEMPLATES[5].elements))
+          bg: { color: '#ffffff' },
+          elements: []
         }
       },
       history: [],
@@ -3446,10 +3446,10 @@
       }
     }
 
-    // Initialize Application
+    // Initialize Application (Starts with a clean, blank card canvas)
     autoAdjustZoomForViewport();
-    // Pre-select the logo image on initial load so the user immediately sees the iPad/PC resize handles
-    state.selectedId = 'el-3';
+    state.selectedId = null;
+    state.selectedIds = [];
     saveHistorySnapshot();
     renderAll();
   </script>
