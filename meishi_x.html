@@ -607,12 +607,22 @@
               </label>
             </div>
 
-            <!-- Offset Calibration (上下左右mm調整) -->
+            <!-- Offset & AirPrint Scale Calibration (上下左右mm調整 + letapaX仕様のAirPrint余白自動補正) -->
             <div class="space-y-3 pt-2 border-t border-[var(--border)]">
               <div class="flex items-center justify-between">
-                <label class="text-xs font-semibold">全体の印刷位置調整 (mm)</label>
-                <button id="btn-reset-offset" class="text-[11px] text-[var(--primary)] hover:underline">0に戻す</button>
+                <label class="text-xs font-semibold">位置微調整 & AirPrint余白自動計算</label>
+                <button id="btn-reset-offset" class="text-[11px] text-[var(--primary)] hover:underline">初期値に戻す</button>
               </div>
+
+              <!-- AirPrint Auto-Margin Compensation Toggle (letapaX spec) -->
+              <label class="flex items-start gap-2 p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/25 text-xs cursor-pointer">
+                <input id="chk-airprint-auto-comp" type="checkbox" checked class="accent-[var(--primary)] mt-0.5 shrink-0" />
+                <div class="leading-relaxed">
+                  <span class="font-bold text-[var(--foreground)] block">iPad / iPhone AirPrint 余白・縮小の自動補正</span>
+                  <span class="text-[11px] text-[var(--muted-foreground)]">AirPrint特有のプリンター余白による自動縮小を計算し、10面のミシン目枠（左14mm・上11mm・91×55mm）にデザインがぴったり収まるよう自動補正します。</span>
+                </div>
+              </label>
+
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <span class="text-[11px] text-[var(--muted-foreground)] block mb-1">左右ズレ補正 (X)</span>
@@ -629,6 +639,20 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Overall Print Scale Slider & Presets (letapaX spec) -->
+              <div class="space-y-1.5 pt-1">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-[11px] text-[var(--muted-foreground)] font-semibold">全体スケール（倍率微調整）</span>
+                  <span id="val-print-scale" class="font-mono font-bold text-[var(--primary)]">100%</span>
+                </div>
+                <input id="slider-print-scale" type="range" min="90" max="115" step="0.5" value="100" class="w-full accent-[var(--primary)] cursor-pointer" />
+                <div class="grid grid-cols-3 gap-1 pt-0.5">
+                  <button type="button" data-preset-scale="100" class="py-1 px-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--secondary)] text-[10px] font-semibold">100% (標準原寸)</button>
+                  <button type="button" data-preset-scale="103.5" class="py-1 px-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--secondary)] text-[10px] font-semibold">103.5% (AirPrint微拡大)</button>
+                  <button type="button" data-preset-scale="106" class="py-1 px-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--secondary)] text-[10px] font-semibold">106% (フチなし補正)</button>
+                </div>
+              </div>
             </div>
 
             <!-- Edge border notice -->
@@ -636,11 +660,14 @@
               ✓ 印刷時は用紙の縁線・切り取り枠線を一切印刷しません（フチに線が残らないクリーン出力）
             </div>
 
-            <!-- Execute Print / Export Buttons -->
+            <!-- Execute Print / AirPrint PDF Export Buttons (letapaX PWA spec) -->
             <div class="pt-3 border-t border-[var(--border)] space-y-2">
               <button id="btn-exec-a4-print" class="w-full py-2.5 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] font-bold text-xs shadow hover:opacity-90 flex items-center justify-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                <span id="btn-exec-print-label">A4・表裏両面 (2ページ) を印刷 / PDF保存</span>
+                <span id="btn-exec-print-label">A4・表裏両面 (2ページ) を AirPrint / 印刷</span>
+              </button>
+              <button id="btn-open-airprint-modal" class="w-full py-2 rounded-xl bg-blue-600/10 text-blue-700 border border-blue-600/25 font-bold text-xs hover:bg-blue-600/20 flex items-center justify-center gap-1.5">
+                <span>📤 iPad PWA用 AirPrint / A4原寸PDFメニューを開く</span>
               </button>
               <button id="btn-export-sheet-png" class="w-full py-2 rounded-xl bg-[var(--secondary)] text-[var(--secondary-foreground)] font-semibold text-xs hover:opacity-90">
                 A4・10面シート画像 (PNG) をダウンロード
@@ -1048,6 +1075,60 @@
     </div>
   </div>
 
+  <!-- ==================== MODAL: PWA AIRPRINT & A4 EXACT-SCALE PDF (letapaX 仕様) ==================== -->
+  <div id="pwa-print-modal-backdrop" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white text-slate-900 border border-slate-200 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-3.5 max-h-[92vh] overflow-y-auto" style="background-color:#ffffff;">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base text-blue-900 flex items-center gap-1.5">
+          <span>🖨️ A4原寸 PDF / AirPrint 印刷（名刺10面ぴったり補正）</span>
+        </h3>
+        <button id="btn-pwa-close-modal" class="p-1 rounded-lg text-slate-500 hover:bg-slate-100">✕</button>
+      </div>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        iPad / iPhone の AirPrint 余白・自動縮小を計算して補正した<strong>A4実物原寸サイズ（210×297mm / 名刺10面 91×55mm・左余白14mm・上余白11mm・縁線なし）</strong>の印刷用PDFデータを作成しました。そのまま下のボタンから <strong>AirPrint（「プリント」）</strong> またはPDF保存できます。
+      </p>
+
+      <!-- Live Rendered A4 Sheet Preview inside Modal -->
+      <div id="pwa-render-preview-wrap" class="bg-slate-200/80 border border-slate-300 rounded-xl p-3 flex flex-col items-center justify-center min-h-[220px]">
+        <div id="pwa-render-status" class="text-xs font-bold text-blue-800 py-6">⏳ A4原寸（210mm×297mm）のAirPrint用PDFを生成しています...</div>
+        <img id="pwa-render-img" alt="A4原寸10面印刷プレビュー" class="hidden w-full max-w-[250px] h-auto bg-white shadow-md rounded" />
+        <span id="pwa-render-page-badge" class="hidden mt-2 text-[11px] font-bold text-slate-700 bg-white px-2.5 py-0.5 rounded-full shadow-xs"></span>
+      </div>
+
+      <!-- Quick Scale Fine-Tuning inside Modal (letapaX spec) -->
+      <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-bold text-slate-700">印刷サイズ倍率（AirPrint余白微調整）</span>
+          <span id="modal-val-scale" class="font-mono font-bold text-blue-700">100%</span>
+        </div>
+        <input id="modal-slider-scale" type="range" min="90" max="115" step="0.5" value="100" class="w-full accent-blue-600 cursor-pointer" />
+        <div class="grid grid-cols-3 gap-1.5">
+          <button type="button" data-modal-scale="100" class="py-1 px-2 rounded-lg bg-white border border-slate-300 hover:bg-blue-50 text-[11px] font-semibold text-slate-800">100% (自動原寸)</button>
+          <button type="button" data-modal-scale="103.5" class="py-1 px-2 rounded-lg bg-white border border-slate-300 hover:bg-blue-50 text-[11px] font-semibold text-slate-800">103.5% (AirPrint補正)</button>
+          <button type="button" data-modal-scale="106" class="py-1 px-2 rounded-lg bg-white border border-slate-300 hover:bg-blue-50 text-[11px] font-semibold text-slate-800">106% (拡大補正)</button>
+        </div>
+      </div>
+
+      <!-- Actions: 1. Native Share -> AirPrint ("プリント"), 2. Download PDF, 3. Open in Safari -->
+      <div class="space-y-2 pt-1">
+        <button type="button" id="btn-pwa-native-share-pdf" class="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md flex items-center justify-center gap-2 transition active:scale-98">
+          <span>📤 共有メニューから「プリント (AirPrint)」/ PDF保存</span>
+        </button>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" id="btn-pwa-download-pdf" class="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold text-xs flex items-center justify-center gap-1">
+            <span>📥 A4原寸PDFを保存</span>
+          </button>
+          <a id="btn-pwa-open-safari-print" href="#" target="_blank" rel="noopener" class="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold text-xs flex items-center justify-center gap-1 text-center">
+            <span>🌐 Safariで開いて印刷</span>
+          </a>
+        </div>
+        <button type="button" id="btn-pwa-close-modal-bottom" class="w-full py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 font-semibold text-xs">
+          閉じる
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== HIDDEN A4 PRINT CONTAINER (実寸210x297mm 10面印刷用) ==================== -->
   <div id="print-area" class="hidden"></div>
 
@@ -1309,6 +1390,8 @@
       selectedIds: [], // レイヤー順での複数選択対応
       lockRatio: true,
       printOffset: { x: 0, y: 0 },
+      printScale: 100, // 全体印刷スケール (%) - AirPrint余白微調整対応
+      airprintAutoComp: true, // iPad/iPhone AirPrint 時の余白・自動縮小を自動計算して10面枠にぴったり合わせる (letapaX仕様)
       printCropMarks: false, // 印刷時用紙の縁線・枠線は一切描画しない
       activeCells: Array(10).fill(true), // 10面のうち印刷するセル
       sides: {
@@ -2944,14 +3027,92 @@
       state.printOffset.y = Number(e.target.value) || 0;
       render10UpSheetPreview();
     });
+    // Device & Standalone PWA detection (letapaX spec)
+    function isIosOrIpadOsDevice() {
+      const ua = navigator.userAgent || '';
+      return /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    }
+
+    function isStandalonePwaMode() {
+      return Boolean(
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+        window.navigator.standalone === true
+      );
+    }
+
+    // Calculate effective AirPrint scale factor & centered origin (letapaX auto-margin calculation)
+    // A-one 10-up sheet has 14mm left/right margins and 11mm top/bottom margins (grid center: X=105mm, Y=148.5mm).
+    // When iOS/iPadOS AirPrint prints an A4 PDF, printer unprintable margins (typically ~4.2mm top/bottom on AirPrint)
+    // can cause iOS to shrink the page by ~2.8% (288.6/297 = 0.9717) unless pre-compensated around the sheet center (105mm, 148.5mm).
+    function getEffectivePrintScaleFactor() {
+      const userScale = (Number(state.printScale) || 100) / 100;
+      const autoAirPrintFactor = (state.airprintAutoComp && isIosOrIpadOsDevice() && Math.abs(userScale - 1) < 0.005)
+        ? 1.029
+        : 1.0;
+      return userScale * autoAirPrintFactor;
+    }
+
+    // Sync Print Scale UI sliders & labels
+    function setGlobalPrintScale(newScalePercent, regeneratePdf = false) {
+      const val = Math.max(90, Math.min(115, Number(newScalePercent) || 100));
+      state.printScale = val;
+      const sl = document.getElementById('slider-print-scale');
+      const vl = document.getElementById('val-print-scale');
+      const msl = document.getElementById('modal-slider-scale');
+      const mvl = document.getElementById('modal-val-scale');
+      if (sl) sl.value = String(val);
+      if (vl) vl.textContent = val + '%';
+      if (msl) msl.value = String(val);
+      if (mvl) mvl.textContent = val + '%';
+      saveDraftToLocalCache();
+      if (regeneratePdf) {
+        preparePwaPrintAssets();
+      }
+    }
+
+    document.getElementById('chk-airprint-auto-comp').addEventListener('change', (e) => {
+      state.airprintAutoComp = e.target.checked;
+      saveDraftToLocalCache();
+    });
+
+    document.getElementById('slider-print-scale').addEventListener('input', (e) => {
+      setGlobalPrintScale(e.target.value, false);
+    });
+
+    document.querySelectorAll('[data-preset-scale]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        setGlobalPrintScale(btn.getAttribute('data-preset-scale'), false);
+      });
+    });
+
+    document.querySelectorAll('[data-modal-scale]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        setGlobalPrintScale(btn.getAttribute('data-modal-scale'), true);
+      });
+    });
+
+    const modalScaleSlider = document.getElementById('modal-slider-scale');
+    if (modalScaleSlider) {
+      modalScaleSlider.addEventListener('input', () => {
+        const mvl = document.getElementById('modal-val-scale');
+        if (mvl) mvl.textContent = modalScaleSlider.value + '%';
+      });
+      modalScaleSlider.addEventListener('change', () => {
+        setGlobalPrintScale(modalScaleSlider.value, true);
+      });
+    }
+
     document.getElementById('btn-reset-offset').addEventListener('click', () => {
       state.printOffset = { x: 0, y: 0 };
+      state.airprintAutoComp = true;
       document.getElementById('input-offset-x').value = '0.0';
       document.getElementById('input-offset-y').value = '0.0';
+      document.getElementById('chk-airprint-auto-comp').checked = true;
+      setGlobalPrintScale(100, false);
       render10UpSheetPreview();
     });
 
-    // High-Resolution HTML5 Canvas Renderer for Single Card & 10-Up Sheet PNG Download
+    // High-Resolution HTML5 Canvas Renderer for Single Card & 10-Up Sheet PNG / AirPrint PDF
     async function renderCardToCanvas(sideData, scaleFactor = 2) {
       const isLand = sideData.orientation === 'landscape';
       const w = isLand ? 546 : 330;
@@ -3129,28 +3290,42 @@
     document.getElementById('btn-export-single-png').addEventListener('click', async () => {
       const canvas = await renderCardToCanvas(getCurrentSideData(), 3);
       const link = document.createElement('a');
-      link.download = `meishi-${state.activeSide}-91x55mm.png`;
+      link.download = `meishiX-${state.activeSide}-91x55mm.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
     });
 
-    // Helper to build a single A4 10-up sheet canvas for a given sideKey ('front' | 'back') without any border lines
+    // Helper to build a single A4 10-up sheet canvas for a given sideKey ('front' | 'back')
+    // Automatically calculates margins & applies centered scale/offset so all 10 cards fit the A-one sheet accurately
     async function renderA4SheetCanvasForSide(sideKey) {
       const sideData = state.sides[sideKey];
       const singleCardCanvas = await renderCardToCanvas(sideData, 2);
       const sheetCanvas = document.createElement('canvas');
-      const scaleMm = 12; // 210x297mm -> 2520x3564px
+      const scaleMm = 10; // 210x297mm -> 2100x2970px (~254 DPI, fast & crisp for AirPrint PDF)
       sheetCanvas.width = 210 * scaleMm;
       sheetCanvas.height = 297 * scaleMm;
       const ctx = sheetCanvas.getContext('2d');
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, sheetCanvas.width, sheetCanvas.height);
 
+      const scaleVal = getEffectivePrintScaleFactor();
       const offsetSignX = sideKey === 'back' && state.mirrorBackColumns ? -state.printOffset.x : state.printOffset.x;
-      const startX = (state.paper.marginLeft + offsetSignX) * scaleMm;
-      const startY = (state.paper.marginTop + state.printOffset.y) * scaleMm;
-      const cellW = 91 * scaleMm;
-      const cellH = 55 * scaleMm;
+      const offX = offsetSignX * scaleMm;
+      const offY = state.printOffset.y * scaleMm;
+
+      // Exact A4 center (105mm, 148.5mm) coincides with the center of the 2x5 10-up grid (14+91=105mm, 11+137.5=148.5mm)
+      const centerX = (state.paper.marginLeft + state.paper.cols * state.paper.cardW / 2) * scaleMm;
+      const centerY = (state.paper.marginTop + state.paper.rows * state.paper.cardH / 2) * scaleMm;
+
+      ctx.save();
+      ctx.translate(centerX + offX, centerY + offY);
+      ctx.scale(scaleVal, scaleVal);
+      ctx.translate(-centerX, -centerY);
+
+      const startX = state.paper.marginLeft * scaleMm;
+      const startY = state.paper.marginTop * scaleMm;
+      const cellW = state.paper.cardW * scaleMm;
+      const cellH = state.paper.cardH * scaleMm;
 
       for (let row = 0; row < 5; row++) {
         for (let col = 0; col < 2; col++) {
@@ -3170,9 +3345,10 @@
             }
             ctx.restore();
           }
-          // No edge lines or crop marks drawn!
+          // Zero edge lines or crop marks drawn
         }
       }
+      ctx.restore();
       return sheetCanvas;
     }
 
@@ -3182,16 +3358,93 @@
       for (const sideKey of sidesToExport) {
         const sheetCanvas = await renderA4SheetCanvasForSide(sideKey);
         const link = document.createElement('a');
-        link.download = `meishi-A4-10up-${state.paper.id}-${sideKey}.png`;
+        link.download = `meishiX-A4-10up-${state.paper.id}-${sideKey}.png`;
         link.href = sheetCanvas.toDataURL('image/png');
         link.click();
       }
     });
 
-    // Build a single A4 Page DOM element for printing (10-Up exact mm layout, NO border lines)
+    // Build an Exact A4 (210mm x 297mm = 595.28pt x 841.89pt) 1-Page or 2-Page PDF with `/PrintScaling /None` (letapaX spec)
+    function buildMultiPagePdfFromJpegPages(pagesList) {
+      const pageW = 595.28;
+      const pageH = 841.89;
+      const contentStream = `q\n${pageW} 0 0 ${pageH} 0 0 cm\n/Im0 Do\nQ\n`;
+
+      const encoder = new TextEncoder();
+      const chunks = [];
+      const offsets = [0];
+      let byteCount = 0;
+
+      function pushStr(str) {
+        const b = encoder.encode(str);
+        chunks.push(b);
+        byteCount += b.length;
+      }
+      function pushBytes(b) {
+        chunks.push(b);
+        byteCount += b.length;
+      }
+      function startObj() {
+        offsets.push(byteCount);
+      }
+
+      pushStr('%PDF-1.4\n%\xFF\xFF\xFF\xFF\n');
+
+      // Obj 1: Catalog with /PrintScaling /None so AirPrint & Adobe Reader keep exact 100% dimensions
+      startObj();
+      pushStr('1 0 obj\n<< /Type /Catalog /Pages 2 0 R /ViewerPreferences << /PrintScaling /None >> >>\nendobj\n');
+
+      const numPages = pagesList.length;
+      const pageObjIds = [];
+      for (let i = 0; i < numPages; i++) {
+        pageObjIds.push(3 + i * 3);
+      }
+
+      // Obj 2: Pages root
+      startObj();
+      pushStr(`2 0 obj\n<< /Type /Pages /Kids [${pageObjIds.map((id) => `${id} 0 R`).join(' ')}] /Count ${numPages} >>\nendobj\n`);
+
+      // Each page uses 3 objects: Page (3+i*3), Image XObject (4+i*3), Content Stream (5+i*3)
+      for (let i = 0; i < numPages; i++) {
+        const pg = pagesList[i];
+        const base64 = pg.jpegDataUrl.split(',')[1] || '';
+        const rawStr = atob(base64);
+        const jpegBytes = new Uint8Array(rawStr.length);
+        for (let k = 0; k < rawStr.length; k++) {
+          jpegBytes[k] = rawStr.charCodeAt(k);
+        }
+
+        const pageObjId = 3 + i * 3;
+        const imgObjId = 4 + i * 3;
+        const contentObjId = 5 + i * 3;
+
+        startObj();
+        pushStr(`${pageObjId} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /CropBox [0 0 ${pageW} ${pageH}] /BleedBox [0 0 ${pageW} ${pageH}] /TrimBox [0 0 ${pageW} ${pageH}] /UserUnit 1.0 /Resources << /XObject << /Im0 ${imgObjId} 0 R >> >> /Contents ${contentObjId} 0 R >>\nendobj\n`);
+
+        startObj();
+        pushStr(`${imgObjId} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${pg.width} /Height ${pg.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpegBytes.length} >>\nstream\n`);
+        pushBytes(jpegBytes);
+        pushStr('\nendstream\nendobj\n');
+
+        startObj();
+        pushStr(`${contentObjId} 0 obj\n<< /Length ${contentStream.length} >>\nstream\n${contentStream}endstream\nendobj\n`);
+      }
+
+      const xrefOffset = byteCount;
+      pushStr(`xref\n0 ${offsets.length}\n0000000000 65535 f \n`);
+      for (let i = 1; i < offsets.length; i++) {
+        pushStr(String(offsets[i]).padStart(10, '0') + ' 00000 n \n');
+      }
+      pushStr(`trailer\n<< /Size ${offsets.length} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`);
+
+      return new Blob(chunks, { type: 'application/pdf' });
+    }
+
+    // Build a single A4 Page DOM element for browser printing (10-Up exact mm layout, NO border lines)
     function createPrintableA4PageDOM(sideKey) {
       const side = state.sides[sideKey];
       const isLand = side.orientation === 'landscape';
+      const scaleVal = getEffectivePrintScaleFactor();
 
       const sheet = document.createElement('div');
       sheet.className = 'print-sheet-page';
@@ -3214,6 +3467,10 @@
       grid.style.height = '275mm';
       grid.style.border = 'none';
       grid.style.outline = 'none';
+      if (Math.abs(scaleVal - 1) > 0.001) {
+        grid.style.transform = `scale(${scaleVal.toFixed(4)})`;
+        grid.style.transformOrigin = 'center center';
+      }
 
       for (let i = 0; i < 10; i++) {
         const sourceIdx = getEffectiveCellIndex(i, sideKey);
@@ -3236,7 +3493,6 @@
           cardDom.style.transformOrigin = 'top left';
           cardDom.style.border = 'none';
           cardDom.style.outline = 'none';
-          // 91mm in CSS pixels at 96dpi is ~343.937px => ratio = 343.937 / 546 = 0.62992
           const cssScale = 343.937 / 546;
           if (isLand) {
             cardDom.style.transform = `scale(${cssScale})`;
@@ -3253,17 +3509,219 @@
       return sheet;
     }
 
-    // Execute Native Browser A4 Print (Supports 2-page Duplex Front+Back or 1-page Single-sided, with zero edge lines)
-    function executeA4Print() {
+    // Draft Caching & Safari Handoff URL for PWA Print (letapaX spec)
+    const DRAFT_CACHE_KEY = 'meishi_x_draft_state_v1';
+
+    function saveDraftToLocalCache() {
+      try {
+        const payload = {
+          paperId: state.paper.id,
+          printMode: state.printMode,
+          mirrorBackColumns: state.mirrorBackColumns,
+          printOffset: state.printOffset,
+          printScale: state.printScale,
+          airprintAutoComp: state.airprintAutoComp,
+          activeCells: state.activeCells,
+          sides: state.sides
+        };
+        localStorage.setItem(DRAFT_CACHE_KEY, JSON.stringify(payload));
+      } catch (_) {}
+    }
+
+    function buildSafariHandoffPrintUrl() {
+      try {
+        const payload = {
+          paperId: state.paper.id,
+          printMode: state.printMode,
+          mirrorBackColumns: state.mirrorBackColumns,
+          printOffset: state.printOffset,
+          printScale: state.printScale,
+          airprintAutoComp: state.airprintAutoComp,
+          activeCells: state.activeCells,
+          sides: state.sides
+        };
+        const jsonStr = JSON.stringify(payload);
+        const b64 = btoa(unescape(encodeURIComponent(jsonStr)));
+        const baseUrl = window.location.origin + window.location.pathname + window.location.search;
+        return `${baseUrl}#mxprint=${encodeURIComponent(b64)}`;
+      } catch (_) {
+        return window.location.href;
+      }
+    }
+
+    function checkUrlPrintHandoffOnLoad() {
+      try {
+        const hash = window.location.hash || '';
+        if (hash.startsWith('#mxprint=')) {
+          const b64 = decodeURIComponent(hash.slice('#mxprint='.length));
+          const jsonStr = decodeURIComponent(escape(atob(b64)));
+          const parsed = JSON.parse(jsonStr);
+          if (parsed && parsed.sides) {
+            state.sides = parsed.sides;
+            if (parsed.printMode) state.printMode = parsed.printMode;
+            if (parsed.mirrorBackColumns !== undefined) state.mirrorBackColumns = parsed.mirrorBackColumns;
+            if (parsed.printOffset) state.printOffset = parsed.printOffset;
+            if (parsed.printScale) state.printScale = parsed.printScale;
+            if (parsed.airprintAutoComp !== undefined) state.airprintAutoComp = parsed.airprintAutoComp;
+            if (Array.isArray(parsed.activeCells)) state.activeCells = parsed.activeCells;
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+            renderAll();
+            setTimeout(() => {
+              executeBrowserDomPrintOnly();
+            }, 400);
+          }
+        }
+      } catch (_) {}
+    }
+
+    let preparedPwaPdfFile = null;
+
+    async function preparePwaPrintAssets() {
+      const statusEl = document.getElementById('pwa-render-status');
+      const imgEl = document.getElementById('pwa-render-img');
+      const badgeEl = document.getElementById('pwa-render-page-badge');
+      if (statusEl) {
+        statusEl.classList.remove('hidden');
+        statusEl.textContent = '⏳ A4原寸（210mm×297mm）のAirPrint用PDFを生成しています...';
+      }
+      if (imgEl) imgEl.classList.add('hidden');
+      if (badgeEl) badgeEl.classList.add('hidden');
+
+      try {
+        const sidesToPrint = state.printMode === 'both' ? ['front', 'back'] : [state.printMode];
+        const pagesData = [];
+        for (const sideKey of sidesToPrint) {
+          const canvas = await renderA4SheetCanvasForSide(sideKey);
+          const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.96);
+          pagesData.push({
+            sideKey,
+            jpegDataUrl,
+            width: canvas.width,
+            height: canvas.height
+          });
+        }
+
+        const pdfBlob = buildMultiPagePdfFromJpegPages(pagesData);
+        const modeTag = state.printMode === 'both' ? '表裏両面_2P' : (state.printMode === 'front' ? '表面_1P' : '裏面_1P');
+        const fileName = `名刺X_A4_10面_${state.paper.id}_${modeTag}.pdf`;
+        preparedPwaPdfFile = new File([pdfBlob], fileName, {
+          type: 'application/pdf',
+          lastModified: Date.now()
+        });
+
+        if (imgEl && pagesData.length > 0) {
+          imgEl.src = pagesData[0].jpegDataUrl;
+          imgEl.classList.remove('hidden');
+        }
+        if (badgeEl) {
+          badgeEl.textContent = state.printMode === 'both'
+            ? '📄 A4原寸 PDF (全2ページ: 1P 表面10面 ＋ 2P 裏面10面・縁線なし)'
+            : `📄 A4原寸 PDF (全1ページ: ${state.printMode === 'front' ? '表面' : '裏面'}10面・縁線なし)`;
+          badgeEl.classList.remove('hidden');
+        }
+        if (statusEl) statusEl.classList.add('hidden');
+      } catch (err) {
+        if (statusEl) {
+          statusEl.textContent = 'PDF生成に失敗しました。下の「Safariで開いて印刷」をお試しください。';
+        }
+      }
+    }
+
+    function openPwaPrintModal() {
+      const backdrop = document.getElementById('pwa-print-modal-backdrop');
+      const openLink = document.getElementById('btn-pwa-open-safari-print');
+      if (openLink) openLink.href = buildSafariHandoffPrintUrl();
+      if (backdrop) backdrop.classList.remove('hidden');
+      setGlobalPrintScale(state.printScale, true);
+    }
+
+    function closePwaPrintModal() {
+      const backdrop = document.getElementById('pwa-print-modal-backdrop');
+      if (backdrop) backdrop.classList.add('hidden');
+    }
+
+    document.getElementById('btn-pwa-close-modal').addEventListener('click', closePwaPrintModal);
+    document.getElementById('btn-pwa-close-modal-bottom').addEventListener('click', closePwaPrintModal);
+    document.getElementById('btn-open-airprint-modal').addEventListener('click', openPwaPrintModal);
+
+    // Web Share API -> Native iOS/iPadOS AirPrint ("プリント")
+    document.getElementById('btn-pwa-native-share-pdf').addEventListener('click', async () => {
+      if (!preparedPwaPdfFile) {
+        await preparePwaPrintAssets();
+      }
+      if (preparedPwaPdfFile && navigator.share && (!navigator.canShare || navigator.canShare({ files: [preparedPwaPdfFile] }))) {
+        try {
+          await navigator.share({
+            files: [preparedPwaPdfFile],
+            title: '名刺X A4・10面原寸印刷'
+          });
+          return;
+        } catch (err) {
+          if (err && err.name === 'AbortError') return;
+        }
+      }
+      document.getElementById('btn-pwa-download-pdf').click();
+    });
+
+    // Direct A4 Exact-Scale PDF Download
+    document.getElementById('btn-pwa-download-pdf').addEventListener('click', async () => {
+      if (!preparedPwaPdfFile) {
+        await preparePwaPrintAssets();
+      }
+      if (!preparedPwaPdfFile) return;
+      const url = URL.createObjectURL(preparedPwaPdfFile);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = preparedPwaPdfFile.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    });
+
+    function executeBrowserDomPrintOnly() {
       const printArea = document.getElementById('print-area');
       printArea.innerHTML = '';
-
       const pages = state.printMode === 'both' ? ['front', 'back'] : [state.printMode];
       pages.forEach((sideKey) => {
         printArea.appendChild(createPrintableA4PageDOM(sideKey));
       });
-
       window.print();
+    }
+
+    // Smart Print Handler (letapaX spec: detects iPad/iOS Standalone PWA where window.print() is blocked and opens AirPrint PDF Modal automatically)
+    function executeA4Print() {
+      saveDraftToLocalCache();
+
+      if (isStandalonePwaMode() || isIosOrIpadOsDevice()) {
+        let printEventTriggered = false;
+        const onBeforePrint = () => { printEventTriggered = true; };
+        window.addEventListener('beforeprint', onBeforePrint, { once: true });
+
+        const mql = window.matchMedia ? window.matchMedia('print') : null;
+        const onMqlChange = (e) => { if (e && e.matches) printEventTriggered = true; };
+        if (mql && typeof mql.addEventListener === 'function') {
+          mql.addEventListener('change', onMqlChange);
+        }
+
+        if (!isStandalonePwaMode()) {
+          try {
+            executeBrowserDomPrintOnly();
+          } catch (_) {}
+        }
+
+        setTimeout(() => {
+          window.removeEventListener('beforeprint', onBeforePrint);
+          if (mql && typeof mql.removeEventListener === 'function') {
+            mql.removeEventListener('change', onMqlChange);
+          }
+          if (!printEventTriggered) {
+            openPwaPrintModal();
+          }
+        }, isStandalonePwaMode() ? 80 : 380);
+      } else {
+        executeBrowserDomPrintOnly();
+      }
     }
 
     document.getElementById('btn-exec-a4-print').addEventListener('click', executeA4Print);
@@ -3458,6 +3916,7 @@
     state.selectedIds = [];
     saveHistorySnapshot();
     renderAll();
+    checkUrlPrintHandoffOnLoad();
 
     // Register Service Worker for iPadOS / PC PWA Offline Support
     if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
