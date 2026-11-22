@@ -573,11 +573,11 @@
             </div>
           </div>
 
-          <!-- Right Column: ラベル屋さん10 印刷位置調整 & 面付け設定 -->
+          <!-- Right Column: シンプル＆全自動 AirPrint 10面印刷パネル -->
           <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 space-y-4">
             <div>
-              <h3 class="font-bold text-sm">印刷設定・位置微調整</h3>
-              <p class="text-xs text-[var(--muted-foreground)] mt-0.5">プリンターの給紙ズレを0.5mm単位で補正できます</p>
+              <h3 class="font-bold text-sm">A4・10面シート 印刷・PDF出力</h3>
+              <p class="text-xs text-[var(--muted-foreground)] mt-0.5">余白とAirPrint縮小は自動計算されるため設定不要です</p>
             </div>
 
             <div class="space-y-2 pt-2 border-t border-[var(--border)]">
@@ -588,11 +588,11 @@
                 <button id="btn-sheet-side-both" class="py-2 px-1 rounded-xl text-xs font-bold bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs">表裏両面</button>
               </div>
               <p id="print-mode-hint" class="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
-                1ページ目に「表面(10面)」、2ページ目に「裏面(10面・左右反転配置対応)」を連続出力します。プリンター設定で「両面印刷（長辺とじ）」を選択してください。
+                1ページ目に「表面(10面)」、2ページ目に「裏面(10面)」を縁線なしで連続出力します。
               </p>
             </div>
 
-            <!-- Preview switcher when in duplex mode -->
+            <!-- Preview switcher -->
             <div class="space-y-1.5 pt-2 border-t border-[var(--border)]">
               <div class="flex items-center justify-between">
                 <label class="text-xs font-semibold">左記プレビューの表示面</label>
@@ -601,73 +601,23 @@
                   <button id="btn-preview-back" class="px-2.5 py-1 rounded-md text-[11px] font-bold text-[var(--muted-foreground)]">2P: 裏面</button>
                 </div>
               </div>
-              <label class="flex items-center gap-2 text-[11px] text-[var(--muted-foreground)] cursor-pointer pt-1">
-                <input id="chk-mirror-back-cols" type="checkbox" checked class="accent-[var(--primary)]" />
-                <span>裏面印刷時に左右の列（1列目⇔2列目）を自動反転して表裏の位置を合わせる</span>
-              </label>
             </div>
 
-            <!-- Offset & AirPrint Scale Calibration (上下左右mm調整 + letapaX仕様のAirPrint余白自動補正) -->
-            <div class="space-y-3 pt-2 border-t border-[var(--border)]">
-              <div class="flex items-center justify-between">
-                <label class="text-xs font-semibold">位置微調整 & AirPrint余白自動計算</label>
-                <button id="btn-reset-offset" class="text-[11px] text-[var(--primary)] hover:underline">初期値に戻す</button>
+            <!-- Automatic Margin & AirPrint Status Badge (No manual action required) -->
+            <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 space-y-1">
+              <div class="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
+                <span>✓ 余白・AirPrint原寸 自動計算済み（設定不要）</span>
               </div>
-
-              <!-- AirPrint Auto-Margin Compensation Toggle (letapaX spec) -->
-              <label class="flex items-start gap-2 p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/25 text-xs cursor-pointer">
-                <input id="chk-airprint-auto-comp" type="checkbox" checked class="accent-[var(--primary)] mt-0.5 shrink-0" />
-                <div class="leading-relaxed">
-                  <span class="font-bold text-[var(--foreground)] block">iPad / iPhone AirPrint 余白・縮小の自動補正</span>
-                  <span class="text-[11px] text-[var(--muted-foreground)]">AirPrint特有のプリンター余白による自動縮小を計算し、10面のミシン目枠（左14mm・上11mm・91×55mm）にデザインがぴったり収まるよう自動補正します。</span>
-                </div>
-              </label>
-
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <span class="text-[11px] text-[var(--muted-foreground)] block mb-1">左右ズレ補正 (X)</span>
-                  <div class="flex items-center gap-1">
-                    <input id="input-offset-x" type="number" step="0.5" value="0.0" class="w-full px-2.5 py-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] text-xs font-mono" />
-                    <span class="text-xs text-[var(--muted-foreground)]">mm</span>
-                  </div>
-                </div>
-                <div>
-                  <span class="text-[11px] text-[var(--muted-foreground)] block mb-1">上下ズレ補正 (Y)</span>
-                  <div class="flex items-center gap-1">
-                    <input id="input-offset-y" type="number" step="0.5" value="0.0" class="w-full px-2.5 py-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] text-xs font-mono" />
-                    <span class="text-xs text-[var(--muted-foreground)]">mm</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Overall Print Scale Slider & Presets (letapaX spec) -->
-              <div class="space-y-1.5 pt-1">
-                <div class="flex items-center justify-between text-xs">
-                  <span class="text-[11px] text-[var(--muted-foreground)] font-semibold">全体スケール（倍率微調整）</span>
-                  <span id="val-print-scale" class="font-mono font-bold text-[var(--primary)]">100%</span>
-                </div>
-                <input id="slider-print-scale" type="range" min="90" max="115" step="0.5" value="100" class="w-full accent-[var(--primary)] cursor-pointer" />
-                <div class="grid grid-cols-3 gap-1 pt-0.5">
-                  <button type="button" data-preset-scale="100" class="py-1 px-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--secondary)] text-[10px] font-semibold">100% (標準原寸)</button>
-                  <button type="button" data-preset-scale="103.5" class="py-1 px-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--secondary)] text-[10px] font-semibold">103.5% (AirPrint微拡大)</button>
-                  <button type="button" data-preset-scale="106" class="py-1 px-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--secondary)] text-[10px] font-semibold">106% (フチなし補正)</button>
-                </div>
-              </div>
+              <p class="text-[11px] text-emerald-700/90 leading-relaxed">
+                A-one 10面余白（左14mm・上11mm・91×55mm）、裏面位置合わせ、iPad AirPrint時の縮小補正はすべて自動適用されます。用紙の縁線も一切印刷されません。
+              </p>
             </div>
 
-            <!-- Edge border notice -->
-            <div class="px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-700 font-medium">
-              ✓ 印刷時は用紙の縁線・切り取り枠線を一切印刷しません（フチに線が残らないクリーン出力）
-            </div>
-
-            <!-- Execute Print / AirPrint PDF Export Buttons (letapaX PWA spec) -->
-            <div class="pt-3 border-t border-[var(--border)] space-y-2">
-              <button id="btn-exec-a4-print" class="w-full py-2.5 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] font-bold text-xs shadow hover:opacity-90 flex items-center justify-center gap-2">
+            <!-- Primary Execute Print / AirPrint PDF Export Buttons -->
+            <div class="pt-1 space-y-2">
+              <button id="btn-exec-a4-print" class="w-full py-3 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] font-bold text-xs shadow-md hover:opacity-90 flex items-center justify-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 <span id="btn-exec-print-label">A4・表裏両面 (2ページ) を AirPrint / 印刷</span>
-              </button>
-              <button id="btn-open-airprint-modal" class="w-full py-2 rounded-xl bg-blue-600/10 text-blue-700 border border-blue-600/25 font-bold text-xs hover:bg-blue-600/20 flex items-center justify-center gap-1.5">
-                <span>📤 iPad PWA用 AirPrint / A4原寸PDFメニューを開く</span>
               </button>
               <button id="btn-export-sheet-png" class="w-full py-2 rounded-xl bg-[var(--secondary)] text-[var(--secondary-foreground)] font-semibold text-xs hover:opacity-90">
                 A4・10面シート画像 (PNG) をダウンロード
@@ -676,6 +626,47 @@
                 名刺単体 (高解像度PNG) をダウンロード
               </button>
             </div>
+
+            <!-- Collapsible Advanced Hardware Offset (Hidden by default so users never need to touch it) -->
+            <details class="pt-2 border-t border-[var(--border)] text-xs">
+              <summary class="cursor-pointer text-[11px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] font-medium select-none">
+                ⚙ プリンター本体の物理的な給紙ズレ微調整（通常は変更不要）
+              </summary>
+              <div class="mt-3 space-y-3 p-2.5 rounded-xl bg-[var(--background)] border border-[var(--border)]">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] font-semibold">給紙ズレ補正 (mm)</span>
+                  <button id="btn-reset-offset" class="text-[11px] text-[var(--primary)] hover:underline">初期値(自動)に戻す</button>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <span class="text-[10px] text-[var(--muted-foreground)] block mb-1">左右 (X)</span>
+                    <div class="flex items-center gap-1">
+                      <input id="input-offset-x" type="number" step="0.5" value="0.0" class="w-full px-2 py-1 rounded bg-[var(--card)] border border-[var(--border)] text-xs font-mono" />
+                      <span class="text-[10px] text-[var(--muted-foreground)]">mm</span>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-[var(--muted-foreground)] block mb-1">上下 (Y)</span>
+                    <div class="flex items-center gap-1">
+                      <input id="input-offset-y" type="number" step="0.5" value="0.0" class="w-full px-2 py-1 rounded bg-[var(--card)] border border-[var(--border)] text-xs font-mono" />
+                      <span class="text-[10px] text-[var(--muted-foreground)]">mm</span>
+                    </div>
+                  </div>
+                </div>
+                <label class="flex items-center gap-2 text-[11px] text-[var(--muted-foreground)] cursor-pointer">
+                  <input id="chk-mirror-back-cols" type="checkbox" checked class="accent-[var(--primary)]" />
+                  <span>裏面印刷時に左右列（1列目⇔2列目）を自動反転</span>
+                </label>
+                <label class="flex items-center gap-2 text-[11px] text-[var(--muted-foreground)] cursor-pointer">
+                  <input id="chk-airprint-auto-comp" type="checkbox" checked class="accent-[var(--primary)]" />
+                  <span>AirPrint自動縮小を自動逆補正する</span>
+                </label>
+                <div class="hidden">
+                  <span id="val-print-scale">100%</span>
+                  <input id="slider-print-scale" type="range" min="90" max="115" step="0.5" value="100" />
+                </div>
+              </div>
+            </details>
           </div>
 
         </div>
@@ -1075,17 +1066,17 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL: PWA AIRPRINT & A4 EXACT-SCALE PDF (letapaX 仕様) ==================== -->
+  <!-- ==================== MODAL: PWA AIRPRINT & A4 EXACT-SCALE PDF (letapaX 仕様・完全自動補正) ==================== -->
   <div id="pwa-print-modal-backdrop" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
     <div class="bg-white text-slate-900 border border-slate-200 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-3.5 max-h-[92vh] overflow-y-auto" style="background-color:#ffffff;">
       <div class="flex items-center justify-between">
         <h3 class="font-bold text-base text-blue-900 flex items-center gap-1.5">
-          <span>🖨️ A4原寸 PDF / AirPrint 印刷（名刺10面ぴったり補正）</span>
+          <span>🖨️ A4原寸 PDF / AirPrint 印刷</span>
         </h3>
         <button id="btn-pwa-close-modal" class="p-1 rounded-lg text-slate-500 hover:bg-slate-100">✕</button>
       </div>
       <p class="text-xs text-slate-600 leading-relaxed">
-        iPad / iPhone の AirPrint 余白・自動縮小を計算して補正した<strong>A4実物原寸サイズ（210×297mm / 名刺10面 91×55mm・左余白14mm・上余白11mm・縁線なし）</strong>の印刷用PDFデータを作成しました。そのまま下のボタンから <strong>AirPrint（「プリント」）</strong> またはPDF保存できます。
+        iPad / iPhone の AirPrint 余白・自動縮小を自動計算して補正した<strong>A4実物原寸サイズ（210×297mm / 名刺10面 91×55mm・縁線なし）</strong>の印刷データを作成しました。そのまま下のボタンから印刷・PDF保存できます。
       </p>
 
       <!-- Live Rendered A4 Sheet Preview inside Modal -->
@@ -1093,20 +1084,6 @@
         <div id="pwa-render-status" class="text-xs font-bold text-blue-800 py-6">⏳ A4原寸（210mm×297mm）のAirPrint用PDFを生成しています...</div>
         <img id="pwa-render-img" alt="A4原寸10面印刷プレビュー" class="hidden w-full max-w-[250px] h-auto bg-white shadow-md rounded" />
         <span id="pwa-render-page-badge" class="hidden mt-2 text-[11px] font-bold text-slate-700 bg-white px-2.5 py-0.5 rounded-full shadow-xs"></span>
-      </div>
-
-      <!-- Quick Scale Fine-Tuning inside Modal (letapaX spec) -->
-      <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-        <div class="flex items-center justify-between text-xs">
-          <span class="font-bold text-slate-700">印刷サイズ倍率（AirPrint余白微調整）</span>
-          <span id="modal-val-scale" class="font-mono font-bold text-blue-700">100%</span>
-        </div>
-        <input id="modal-slider-scale" type="range" min="90" max="115" step="0.5" value="100" class="w-full accent-blue-600 cursor-pointer" />
-        <div class="grid grid-cols-3 gap-1.5">
-          <button type="button" data-modal-scale="100" class="py-1 px-2 rounded-lg bg-white border border-slate-300 hover:bg-blue-50 text-[11px] font-semibold text-slate-800">100% (自動原寸)</button>
-          <button type="button" data-modal-scale="103.5" class="py-1 px-2 rounded-lg bg-white border border-slate-300 hover:bg-blue-50 text-[11px] font-semibold text-slate-800">103.5% (AirPrint補正)</button>
-          <button type="button" data-modal-scale="106" class="py-1 px-2 rounded-lg bg-white border border-slate-300 hover:bg-blue-50 text-[11px] font-semibold text-slate-800">106% (拡大補正)</button>
-        </div>
       </div>
 
       <!-- Actions: 1. Native Share -> AirPrint ("プリント"), 2. Download PDF, 3. Open in Safari -->
@@ -3642,7 +3619,6 @@
 
     document.getElementById('btn-pwa-close-modal').addEventListener('click', closePwaPrintModal);
     document.getElementById('btn-pwa-close-modal-bottom').addEventListener('click', closePwaPrintModal);
-    document.getElementById('btn-open-airprint-modal').addEventListener('click', openPwaPrintModal);
 
     // Web Share API -> Native iOS/iPadOS AirPrint ("プリント")
     document.getElementById('btn-pwa-native-share-pdf').addEventListener('click', async () => {

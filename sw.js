@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meishi-x-pwa-v2';
+const CACHE_NAME = 'meishi-x-pwa-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
